@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Javier Morenosa — Blog</title>
+    <link>https://javiermorenosa.dev/</link>
+    <description>NLP/IR researcher building listwise rerankers with DSPy. Writing about retrieval, clinical NLP, and local inference.</description>
+    <language>es-es</language>
+    <item>
+      <title>DSPy modular extractors for CRF filling</title>
+      <link>https://javiermorenosa.dev/post/dsp-crf-filling-2026</link>
+      <guid isPermaLink="true">https://javiermorenosa.dev/post/dsp-crf-filling-2026</guid>
+      <pubDate>Mon, 01 Sep 2026 00:00:00 +0200</pubDate>
+      <description>Descomponer 134 campos clínicos en 14 extractores especializados con DSPy y Pydantic.</description>
+    </item>
+    <item>
+      <title>Listwise reranking with DSPy on BEIR</title>
+      <link>https://javiermorenosa.dev/post/reranker-research-notes</link>
+      <guid isPermaLink="true">https://javiermorenosa.dev/post/reranker-research-notes</guid>
+      <pubDate>Fri, 15 Aug 2026 00:00:00 +0200</pubDate>
+      <description>Notas de investigación sobre listwise rerankers, optimización con MIPROv2, y metric-as-variable.</description>
+    </item>
+    <item>
+      <title>Running models locally with Ollama</title>
+      <link>https://javiermorenosa.dev/post/ollama-local-setup</link>
+      <guid isPermaLink="true">https://javiermorenosa.dev/post/ollama-local-setup</guid>
+      <pubDate>Mon, 20 Jul 2026 00:00:00 +0200</pubDate>
+      <description>Configuración de Ollama para inference local: glm-5.2, mistral, gemma.</description>
+    </item>
+  </channel>
+</rss>

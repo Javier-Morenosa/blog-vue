@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Primary Meta Tags -->
+  <title>Javier Morenosa — NLP/IR Researcher Blog</title>
+  <meta name="title" content="Javier Morenosa — NLP/IR Researcher Blog" />
+  <meta name="description" content="NLP/IR researcher building listwise rerankers with DSPy. Writing about retrieval, clinical NLP, and local inference." />
+  <meta name="author" content="Javier Morenosa" />
+  <meta name="keywords" content="NLP, IR, reranking, DSPy, clinical NLP, retrieval, BEIR, Ollama, information extraction" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://javiermorenosa.dev/" />
+  <meta property="og:title" content="Javier Morenosa — NLP/IR Researcher Blog" />
+  <meta property="og:description" content="NLP/IR researcher building listwise rerankers with DSPy. Writing about retrieval, clinical NLP, and local inference." />
+  <meta property="og:site_name" content="Javier Morenosa" />
+  <meta property="og:locale" content="es_ES" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:url" content="https://javiermorenosa.dev/" />
+  <meta name="twitter:title" content="Javier Morenosa — NLP/IR Researcher Blog" />
+  <meta name="twitter:description" content="NLP/IR researcher building listwise rerankers with DSPy. Writing about retrieval, clinical NLP, and local inference." />
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="Javier Morenosa Blog" href="/rss.xml" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Prevent FOUC for dark mode -->
+  <script>
+    (function() {
+      var saved = localStorage.getItem('blog-theme')
+      if (saved === 'dark') {
+        document.documentElement.classList.add('dark')
+      } else if (saved === 'light') {
+        document.documentElement.classList.add('light')
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark')
+      }
+    })()
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
