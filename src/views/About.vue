@@ -9,13 +9,15 @@
         <p class="hero-prompt mono text-tertiary">
           <span class="prompt-char">$</span> cat about.md
         </p>
-        <h1 class="hero-title">About</h1>
+        <h1 class="hero-title">Javier Sánchez Moreno</h1>
 
         <div class="about-text">
           <p>
-            I'm Javier Morenosa, an NLP/IR researcher focused on
-            <strong>listwise reranking</strong> with DSPy and
-            <strong>clinical information extraction</strong>.
+            AI engineer at <strong>Banco Santander</strong>. I work across the
+            full spectrum of artificial intelligence — from traditional ML to
+            generative AI. Currently researching new workflows and technologies
+            around <strong>LLMs</strong> and <strong>agentic systems</strong>,
+            looking for the vertex of AI.
           </p>
 
           <p>
@@ -34,7 +36,25 @@
         </div>
 
         <p class="scroll-hint mono text-tertiary">
-          <span class="prompt-char">$</span> scroll ↓ for contact
+          <span class="prompt-char">$</span> scroll ↓
+        </p>
+      </div>
+    </section>
+
+    <!-- Manifesto panel -->
+    <section class="panel manifesto-panel">
+      <div class="manifesto-content">
+        <p class="manifesto-label mono text-tertiary">
+          <span class="prompt-char">$</span> echo $BLOG_PURPOSE
+        </p>
+        <p class="manifesto-text">
+          This blog exists as an act of sharing — thoughts, knowledge, and
+          experiments with the community.
+        </p>
+        <p class="manifesto-text">
+          The design parodies the infinite auto-scrolling that so effectively
+          captures human attention. You came here to read. The scroll keeps
+          you reading. Whether that's a feature or a bug is up to you.
         </p>
       </div>
     </section>
@@ -118,6 +138,26 @@
   50% { transform: translateY(6px); opacity: 1; }
 }
 
+/* ── Manifesto ──────────────────────────────────────── */
+.manifesto-content {
+  max-width: 560px;
+  text-align: center;
+}
+
+.manifesto-label {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2rem;
+}
+
+.manifesto-text {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-relaxed);
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
 /* ── Contact ────────────────────────────────────────── */
 .contact-content {
   max-width: 480px;
@@ -162,7 +202,7 @@
     font-size: var(--font-size-3xl);
   }
 
-  .about-text {
+  .about-text, .manifesto-text {
     font-size: var(--font-size-base);
   }
 }

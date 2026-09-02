@@ -44,6 +44,12 @@ watch(() => route.path, () => {
       <RouterView />
     </div>
     <AutoScroll />
+    <footer class="footer">
+      <p class="mono footer-text">
+        <span class="text-tertiary">$</span> javier sánchez moreno
+        <span class="text-tertiary">— ai engineer · santander</span>
+      </p>
+    </footer>
   </div>
 </template>
 
@@ -53,5 +59,9 @@ watch(() => route.path, () => {
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+}
+
+.footer {
+  display: none;
 }
 </style>

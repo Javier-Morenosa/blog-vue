@@ -101,5 +101,38 @@ This is critical for RAG pipelines. The default 2048 is too small for most real-
 ## Quantization
 
 Q4_K_M is the sweet spot. Q8 is marginally better but 2x the size. Q3 starts losing reasoning ability.`
+  },
+  {
+    slug: 'agentic-systems-exploration',
+    title: 'Exploring the vertex of agentic AI',
+    excerpt: 'Notas sobre sistemas agénticos, nuevos flujos de trabajo con LLMs, y dónde está el frontera de la IA generativa en producción.',
+    date: '2026-08-28',
+    tags: ['llm', 'agents', 'generative-ai'],
+    readingTime: 7,
+    body: `# Exploring the vertex of agentic AI
+
+Working with generative AI at scale means moving beyond single-prompt calls. Agentic systems — where LLMs orchestrate tools, reason over multi-step flows, and self-correct — are where the real frontier is.
+
+## What changes with agents
+
+Traditional ML: you train a model, deploy it, it predicts. Done.
+
+Agentic AI: the model decides what to do, calls tools, observes results, and iterates. The prompt is no longer a static instruction — it's a program.
+
+## Key patterns I'm exploring
+
+- **ReAct**: reasoning + acting in interleaved loops
+- **Tool-augmented generation**: LLMs calling APIs, databases, code interpreters
+- **Multi-agent orchestration**: specialized agents collaborating on complex tasks
+
+## The challenge at production scale
+
+At Santander, the bar for reliability is high. Agentic systems that work in demos often fail in production because:
+
+1. Tool calls have side effects that compound errors
+2. Latency multiplies with each reasoning step
+3. Evaluation is harder — you can't just check the final output
+
+The vertex of AI isn't a bigger model. It's better orchestration.`
   }
 ]

@@ -22,11 +22,11 @@ function formatDate(dateStr) {
           <span class="prompt-char">$</span> whoami
         </p>
         <h1 class="hero-title">
-          Javier<br>Morenosa
+          Javier<br>Sánchez Moreno
         </h1>
         <p class="hero-subtitle text-secondary">
-          NLP/IR researcher building listwise rerankers with DSPy.
-          Writing about retrieval, clinical NLP, and local inference.
+          AI engineer at Banco Santander. Exploring LLMs, agentic systems,
+          and the vertex of artificial intelligence.
         </p>
         <p class="scroll-hint mono text-tertiary">
           <span class="prompt-char">$</span> scroll ↓ or wait
