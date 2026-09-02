@@ -172,7 +172,7 @@ watch(() => route.params.slug, () => {
     <!-- End panel with "fin" -->
     <section class="panel end-panel">
       <div class="end-content">
-        <p class="fin-text mono text-accent">— fin —</p>
+        <p class="fin-text mono text-accent">— end —</p>
         <p class="fin-subtext mono text-tertiary">
           <span class="prompt-char">$</span> next scroll → back to feed
         </p>

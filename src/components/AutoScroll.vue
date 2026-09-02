@@ -116,8 +116,14 @@ function scrollToNext() {
   } else {
     // At the last panel
     if (isPostDetail()) {
-      // End of a post: go back to home
-      router.push('/')
+      // End of a post: smooth scroll down one more screen so the end panel
+      // scrolls away naturally, then redirect to home
+      isAnimating = true
+      c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' })
+      setTimeout(() => {
+        router.push('/')
+        isAnimating = false
+      }, 700)
     } else {
       // On home or other pages: loop back to top
       isAnimating = true
@@ -189,7 +195,12 @@ function onKeydown(e) {
     const panels = getPanels()
     const idx = Math.round(c.scrollTop / c.clientHeight)
     if (idx < panels.length - 1) scrollToPanel(idx + 1)
-    else if (isPostDetail()) router.push('/')
+    else if (isPostDetail()) {
+      // smooth scroll away then go home
+      isAnimating = true
+      c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' })
+      setTimeout(() => { router.push('/'); isAnimating = false }, 700)
+    }
   } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
     e.preventDefault()
     const c = getContainer()
