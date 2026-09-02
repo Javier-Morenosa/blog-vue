@@ -3,11 +3,18 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const DURATION = 10000 // 10 seconds
+
+// ── Dynamic timing ──────────────────────────────────
+const WORDS_PER_MINUTE = 220   // average reading speed
+const MIN_DURATION = 4000      // 4s minimum per panel
+const MAX_DURATION = 30000     // 30s maximum per panel
+const READING_BUFFER = 2000    // +2s to let the content breathe
+
+const currentDuration = ref(10000)  // recalculated per panel
 
 const isActive = ref(true)
-const remaining = ref(DURATION)
-const progress = ref(0) // 0..1 for circle
+const remaining = ref(currentDuration.value)
+const progress = ref(0)
 const currentPanelIndex = ref(0)
 const totalPanels = ref(0)
 
@@ -31,6 +38,21 @@ function getPanels() {
   return Array.from(c.querySelectorAll('.panel'))
 }
 
+// ── Count words in a panel ───────────────────────────
+function countWords(panel) {
+  if (!panel) return 0
+  const text = panel.textContent || ''
+  return text.trim().split(/\s+/).filter(w => w.length > 0).length
+}
+
+// ── Calculate dynamic duration for a panel ──────────
+function calcDuration(panel) {
+  const words = countWords(panel)
+  const readingMs = (words / WORDS_PER_MINUTE) * 60 * 1000
+  const total = readingMs + READING_BUFFER
+  return Math.max(MIN_DURATION, Math.min(MAX_DURATION, total))
+}
+
 function updatePanelVisibility() {
   const c = getContainer()
   if (!c) return
@@ -40,7 +62,6 @@ function updatePanelVisibility() {
   currentPanelIndex.value = idx
   totalPanels.value = panels.length
 
-  // apply inline styles for animation (avoids CSS specificity issues)
   panels.forEach((p, i) => {
     const children = p.children
     for (let j = 0; j < children.length; j++) {
@@ -58,6 +79,11 @@ function updatePanelVisibility() {
     if (i === idx) p.classList.add('in-view')
     else p.classList.remove('in-view')
   })
+
+  // recalculate duration for current panel
+  if (panels[idx]) {
+    currentDuration.value = calcDuration(panels[idx])
+  }
 }
 
 function scrollToPanel(index) {
@@ -68,7 +94,6 @@ function scrollToPanel(index) {
 
   isAnimating = true
   panels[index].scrollIntoView({ behavior: 'smooth' })
-
   setTimeout(() => { isAnimating = false }, 600)
 }
 
@@ -83,7 +108,6 @@ function scrollToNext() {
   if (currentIndex < panels.length - 1) {
     scrollToPanel(currentIndex + 1)
   } else {
-    // loop back to top with a nice ease
     isAnimating = true
     c.scrollTo({ top: 0, behavior: 'smooth' })
     setTimeout(() => { isAnimating = false }, 1000)
@@ -102,13 +126,12 @@ function startTimer() {
   const tickMs = 30
   intervalId = setInterval(() => {
     remaining.value -= tickMs
-    progress.value = 1 - (remaining.value / DURATION)
+    progress.value = 1 - (remaining.value / currentDuration.value)
     if (remaining.value <= 0) {
       clearInterval(intervalId)
-      remaining.value = DURATION
+      remaining.value = currentDuration.value
       progress.value = 0
       scrollToNext()
-      // restart timer after scroll settles
       intervalId = setTimeout(() => {
         if (isActive.value) startTimer()
       }, 1000)
@@ -117,7 +140,7 @@ function startTimer() {
 }
 
 function resetTimer() {
-  remaining.value = DURATION
+  remaining.value = currentDuration.value
   progress.value = 0
   clearInterval(intervalId)
   startTimer()
@@ -125,8 +148,6 @@ function resetTimer() {
 
 function onUserScroll() {
   updatePanelVisibility()
-
-  // don't pause if we triggered the scroll programmatically
   if (isAnimating) return
 
   clearTimeout(userScrollTimer)
@@ -167,18 +188,19 @@ function onKeydown(e) {
 onMounted(() => {
   container = getContainer()
   if (container) {
-    // force scroll to top immediately
     container.scrollTop = 0
     container.addEventListener('scroll', onUserScroll, { passive: true })
   }
   window.addEventListener('keydown', onKeydown)
   setTimeout(() => {
-    // clean all in-view classes, then set on panel 0
     const panels = getPanels()
     panels.forEach(p => p.classList.remove('in-view'))
     if (container) container.scrollTop = 0
     if (panels.length) {
-      // apply inline styles to first panel children
+      // calc duration for first panel
+      currentDuration.value = calcDuration(panels[0])
+      remaining.value = currentDuration.value
+
       const firstPanel = panels[0]
       const children = firstPanel.children
       for (let j = 0; j < children.length; j++) {
@@ -186,7 +208,6 @@ onMounted(() => {
         children[j].style.transform = 'translateY(30px) scale(0.98)'
         children[j].style.transitionDelay = '0ms'
       }
-      // force reflow then animate in
       void firstPanel.offsetHeight
       firstPanel.classList.add('in-view')
       for (let j = 0; j < children.length; j++) {
@@ -209,7 +230,6 @@ onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown)
 })
 
-// reset on route change
 watch(() => route.path, () => {
   setTimeout(() => {
     container = getContainer()
@@ -218,6 +238,12 @@ watch(() => route.path, () => {
       container.addEventListener('scroll', onUserScroll, { passive: true })
     }
     updatePanelVisibility()
+    // recalc duration after route change
+    const panels = getPanels()
+    if (panels.length) {
+      currentDuration.value = calcDuration(panels[0])
+      remaining.value = currentDuration.value
+    }
     resetTimer()
   }, 400)
 })

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onMounted, nextTick } from 'vue'
+import { computed, ref, onMounted, onUpdated, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import posts from '../data/posts.js'
 
@@ -31,44 +31,25 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-// Parse markdown into sections (each ## becomes a new panel)
 function parseSections(body) {
   const blocks = body.split(/^## /m)
   const sections = []
-
-  // First block is everything before the first ##
   const intro = blocks[0].trim()
   if (intro) {
     sections.push({ title: null, html: renderBlock(intro) })
   }
-
-  // Remaining blocks start with their heading
   for (let i = 1; i < blocks.length; i++) {
     const lines = blocks[i].split('\n')
     const title = lines[0].trim()
     const content = lines.slice(1).join('\n').trim()
     sections.push({ title, html: renderBlock(content) })
   }
-
   return sections
 }
 
 function renderBlock(text) {
-  // Handle code blocks first
   const codeParts = text.split('```')
   let html = ''
-  for (let i = 0; i < codeParts.length; i++) {
-    if (i % 2 === 0) {
-      html += renderInline(text.slice ? '' : '')
-      html += renderMarkdown(codeParts[i])
-    } else {
-      const langEnd = codeParts[i].indexOf('\n')
-      const code = codeParts[i].slice(langEnd + 1)
-      html += `<pre data-code="${encodeURIComponent(code)}"><code>${escapeHtml(code)}</code></pre>`
-    }
-  }
-  // redo properly
-  html = ''
   for (let i = 0; i < codeParts.length; i++) {
     if (i % 2 === 0) {
       html += renderMarkdown(codeParts[i])
@@ -105,6 +86,50 @@ function inline(text) {
 function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
+
+function injectCopyButtons() {
+  nextTick(() => {
+    const pres = document.querySelectorAll('.section-body pre[data-code]')
+    pres.forEach(pre => {
+      if (pre.querySelector('.copy-btn')) return
+      const code = decodeURIComponent(pre.dataset.code)
+      const btn = document.createElement('button')
+      btn.className = 'copy-btn'
+      btn.textContent = 'copy'
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(code)
+          btn.textContent = '✓ copied'
+          btn.classList.add('copied')
+          setTimeout(() => {
+            btn.textContent = 'copy'
+            btn.classList.remove('copied')
+          }, 2000)
+        } catch (e) {
+          const ta = document.createElement('textarea')
+          ta.value = code
+          document.body.appendChild(ta)
+          ta.select()
+          document.execCommand('copy')
+          document.body.removeChild(ta)
+        }
+      })
+      pre.appendChild(btn)
+    })
+  })
+}
+
+onMounted(() => {
+  injectCopyButtons()
+})
+
+onUpdated(() => {
+  injectCopyButtons()
+})
+
+watch(() => route.params.slug, () => {
+  injectCopyButtons()
+})
 </script>
 
 <template>
@@ -188,50 +213,6 @@ function escapeHtml(str) {
   </div>
 </template>
 
-<script>
-export default {
-  mounted() {
-    this.injectCopyButtons()
-  },
-  updated() {
-    this.injectCopyButtons()
-  },
-  methods: {
-    injectCopyButtons() {
-      this.$nextTick(() => {
-        const pres = document.querySelectorAll('.section-body pre[data-code]')
-        pres.forEach(pre => {
-          if (pre.querySelector('.copy-btn')) return
-          const code = decodeURIComponent(pre.dataset.code)
-          const btn = document.createElement('button')
-          btn.className = 'copy-btn'
-          btn.textContent = 'copy'
-          btn.addEventListener('click', async () => {
-            try {
-              await navigator.clipboard.writeText(code)
-              btn.textContent = '✓ copied'
-              btn.classList.add('copied')
-              setTimeout(() => {
-                btn.textContent = 'copy'
-                btn.classList.remove('copied')
-              }, 2000)
-            } catch (e) {
-              const ta = document.createElement('textarea')
-              ta.value = code
-              document.body.appendChild(ta)
-              ta.select()
-              document.execCommand('copy')
-              document.body.removeChild(ta)
-            }
-          })
-          pre.appendChild(btn)
-        })
-      })
-    }
-  }
-}
-</script>
-
 <style scoped>
 .post-snap {
   display: flex;
@@ -243,7 +224,6 @@ export default {
   margin-right: 0.4rem;
 }
 
-/* ── Header panel ───────────────────────────────────── */
 .header-content {
   max-width: var(--max-width);
   text-align: center;
@@ -305,7 +285,6 @@ export default {
   50% { transform: translateY(6px); opacity: 1; }
 }
 
-/* ── Content panels ─────────────────────────────────── */
 .section-content {
   max-width: var(--max-width);
   width: 100%;
@@ -348,7 +327,6 @@ export default {
   margin: 1.5rem 0;
 }
 
-/* ── Nav panel ──────────────────────────────────────── */
 .nav-content {
   max-width: var(--max-width);
   width: 100%;
