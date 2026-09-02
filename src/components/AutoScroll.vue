@@ -1,29 +1,30 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 
 // ── Dynamic timing ──────────────────────────────────
-const WORDS_PER_MINUTE = 220   // average reading speed
-const MIN_DURATION = 4000      // 4s minimum per panel
-const MAX_DURATION = 30000     // 30s maximum per panel
-const READING_BUFFER = 2000    // +2s to let the content breathe
+const WORDS_PER_MINUTE = 220
+const MIN_DURATION = 4000
+const MAX_DURATION = 30000
+const READING_BUFFER = 2000
 
-const currentDuration = ref(10000)  // recalculated per panel
+const currentDuration = ref(10000)
 
 const isActive = ref(true)
 const remaining = ref(currentDuration.value)
 const progress = ref(0)
 const currentPanelIndex = ref(0)
 const totalPanels = ref(0)
+const isEndPanel = ref(false)  // true when on last panel of a post
 
 let intervalId = null
 let userScrollTimer = null
 let container = null
 let isAnimating = false
 
-// circle geometry
 const R = 14
 const CIRCUMFERENCE = 2 * Math.PI * R
 const dashOffset = computed(() => CIRCUMFERENCE * (1 - progress.value))
@@ -38,14 +39,17 @@ function getPanels() {
   return Array.from(c.querySelectorAll('.panel'))
 }
 
-// ── Count words in a panel ───────────────────────────
+// ── Check if current route is a post detail ──────────
+function isPostDetail() {
+  return route.path.startsWith('/post/')
+}
+
 function countWords(panel) {
   if (!panel) return 0
   const text = panel.textContent || ''
   return text.trim().split(/\s+/).filter(w => w.length > 0).length
 }
 
-// ── Calculate dynamic duration for a panel ──────────
 function calcDuration(panel) {
   const words = countWords(panel)
   const readingMs = (words / WORDS_PER_MINUTE) * 60 * 1000
@@ -61,6 +65,9 @@ function updatePanelVisibility() {
   const idx = Math.round(c.scrollTop / panelHeight)
   currentPanelIndex.value = idx
   totalPanels.value = panels.length
+
+  // detect if we're on the last panel of a post
+  isEndPanel.value = isPostDetail() && idx === panels.length - 1
 
   panels.forEach((p, i) => {
     const children = p.children
@@ -80,7 +87,6 @@ function updatePanelVisibility() {
     else p.classList.remove('in-view')
   })
 
-  // recalculate duration for current panel
   if (panels[idx]) {
     currentDuration.value = calcDuration(panels[idx])
   }
@@ -108,9 +114,16 @@ function scrollToNext() {
   if (currentIndex < panels.length - 1) {
     scrollToPanel(currentIndex + 1)
   } else {
-    isAnimating = true
-    c.scrollTo({ top: 0, behavior: 'smooth' })
-    setTimeout(() => { isAnimating = false }, 1000)
+    // At the last panel
+    if (isPostDetail()) {
+      // End of a post: go back to home
+      router.push('/')
+    } else {
+      // On home or other pages: loop back to top
+      isAnimating = true
+      c.scrollTo({ top: 0, behavior: 'smooth' })
+      setTimeout(() => { isAnimating = false }, 1000)
+    }
   }
 }
 
@@ -176,6 +189,7 @@ function onKeydown(e) {
     const panels = getPanels()
     const idx = Math.round(c.scrollTop / c.clientHeight)
     if (idx < panels.length - 1) scrollToPanel(idx + 1)
+    else if (isPostDetail()) router.push('/')
   } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
     e.preventDefault()
     const c = getContainer()
@@ -185,41 +199,48 @@ function onKeydown(e) {
   }
 }
 
-onMounted(() => {
+function init() {
   container = getContainer()
   if (container) {
     container.scrollTop = 0
+    container.removeEventListener('scroll', onUserScroll)
     container.addEventListener('scroll', onUserScroll, { passive: true })
   }
-  window.addEventListener('keydown', onKeydown)
-  setTimeout(() => {
-    const panels = getPanels()
-    panels.forEach(p => p.classList.remove('in-view'))
-    if (container) container.scrollTop = 0
-    if (panels.length) {
-      // calc duration for first panel
-      currentDuration.value = calcDuration(panels[0])
-      remaining.value = currentDuration.value
-
-      const firstPanel = panels[0]
-      const children = firstPanel.children
-      for (let j = 0; j < children.length; j++) {
-        children[j].style.opacity = '0'
-        children[j].style.transform = 'translateY(30px) scale(0.98)'
-        children[j].style.transitionDelay = '0ms'
-      }
-      void firstPanel.offsetHeight
-      firstPanel.classList.add('in-view')
-      for (let j = 0; j < children.length; j++) {
-        children[j].style.opacity = '1'
-        children[j].style.transform = 'translateY(0) scale(1)'
-        children[j].style.transitionDelay = (j * 80) + 'ms'
-      }
-      currentPanelIndex.value = 0
-      totalPanels.value = panels.length
+  const panels = getPanels()
+  panels.forEach(p => {
+    p.classList.remove('in-view')
+    const children = p.children
+    for (let j = 0; j < children.length; j++) {
+      children[j].style.opacity = '0'
+      children[j].style.transform = 'translateY(30px) scale(0.98)'
+      children[j].style.transitionDelay = '0ms'
     }
-    startTimer()
-  }, 150)
+  })
+  if (container) container.scrollTop = 0
+  if (panels.length) {
+    currentDuration.value = calcDuration(panels[0])
+    remaining.value = currentDuration.value
+
+    const firstPanel = panels[0]
+    const children = firstPanel.children
+    void firstPanel.offsetHeight
+    firstPanel.classList.add('in-view')
+    for (let j = 0; j < children.length; j++) {
+      children[j].style.opacity = '1'
+      children[j].style.transform = 'translateY(0) scale(1)'
+      children[j].style.transitionDelay = (j * 80) + 'ms'
+    }
+    currentPanelIndex.value = 0
+    totalPanels.value = panels.length
+    isEndPanel.value = isPostDetail() && panels.length === 1
+  }
+  resetTimer()
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onKeydown)
+  window.addEventListener('route-change', init)
+  setTimeout(() => init(), 200)
 })
 
 onUnmounted(() => {
@@ -228,24 +249,11 @@ onUnmounted(() => {
     container.removeEventListener('scroll', onUserScroll)
   }
   window.removeEventListener('keydown', onKeydown)
+  window.removeEventListener('route-change', init)
 })
 
 watch(() => route.path, () => {
-  setTimeout(() => {
-    container = getContainer()
-    if (container) {
-      container.removeEventListener('scroll', onUserScroll)
-      container.addEventListener('scroll', onUserScroll, { passive: true })
-    }
-    updatePanelVisibility()
-    // recalc duration after route change
-    const panels = getPanels()
-    if (panels.length) {
-      currentDuration.value = calcDuration(panels[0])
-      remaining.value = currentDuration.value
-    }
-    resetTimer()
-  }, 400)
+  setTimeout(() => init(), 300)
 })
 </script>
 
@@ -266,7 +274,7 @@ watch(() => route.path, () => {
     <!-- Auto-scroll indicator -->
     <button
       class="autoscroll-indicator"
-      :class="{ paused: !isActive }"
+      :class="{ paused: !isActive, end: isEndPanel }"
       @click="toggleAutoScroll"
       :title="isActive ? 'auto-scroll active — click to pause' : 'auto-scroll paused — click to resume'"
     >
@@ -287,7 +295,7 @@ watch(() => route.path, () => {
           transform="rotate(-90 18 18)"
         />
       </svg>
-      <span class="indicator-icon">{{ isActive ? '↓' : '⏸' }}</span>
+      <span class="indicator-icon">{{ isActive ? (isEndPanel ? '⏎' : '↓') : '⏸' }}</span>
     </button>
   </div>
 </template>
@@ -333,6 +341,11 @@ watch(() => route.path, () => {
   transform: scale(1.05);
 }
 
+.autoscroll-indicator.end {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md), 0 0 12px var(--accent-glow);
+}
+
 .progress-ring {
   position: absolute;
   top: 0;
@@ -356,6 +369,10 @@ watch(() => route.path, () => {
 }
 
 .autoscroll-indicator:hover .indicator-icon {
+  color: var(--accent);
+}
+
+.autoscroll-indicator.end .indicator-icon {
   color: var(--accent);
 }
 

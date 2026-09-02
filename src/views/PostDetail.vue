@@ -169,33 +169,14 @@ watch(() => route.params.slug, () => {
       </div>
     </section>
 
-    <!-- Navigation panel -->
-    <section class="panel nav-panel">
-      <div class="nav-content">
-        <p class="panel-label mono text-tertiary">
-          <span class="prompt-char">$</span> ls posts/
+    <!-- End panel with "fin" -->
+    <section class="panel end-panel">
+      <div class="end-content">
+        <p class="fin-text mono text-accent">— fin —</p>
+        <p class="fin-subtext mono text-tertiary">
+          <span class="prompt-char">$</span> next scroll → back to feed
         </p>
-        <div class="post-nav">
-          <RouterLink
-            v-if="prevPost"
-            :to="`/post/${prevPost.slug}`"
-            class="post-nav-link prev"
-          >
-            <span class="nav-label mono text-tertiary">← prev</span>
-            <span class="nav-title text-secondary">{{ prevPost.title }}</span>
-          </RouterLink>
-          <span v-else></span>
-
-          <RouterLink
-            v-if="nextPost"
-            :to="`/post/${nextPost.slug}`"
-            class="post-nav-link next"
-          >
-            <span class="nav-label mono text-tertiary">next →</span>
-            <span class="nav-title text-secondary">{{ nextPost.title }}</span>
-          </RouterLink>
-        </div>
-        <RouterLink to="/" class="home-link mono text-accent">
+        <RouterLink to="/" class="fin-link mono">
           ↑ back to all posts
         </RouterLink>
       </div>
@@ -331,6 +312,37 @@ watch(() => route.params.slug, () => {
   max-width: var(--max-width);
   width: 100%;
   text-align: center;
+}
+
+/* ── End panel ──────────────────────────────────────── */
+.end-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.fin-text {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+.fin-subtext {
+  font-size: var(--font-size-sm);
+}
+
+.fin-link {
+  font-size: var(--font-size-sm);
+  color: var(--text-accent);
+  margin-top: 1rem;
+  transition: color 0.2s ease;
+}
+
+.fin-link:hover {
+  color: var(--accent);
 }
 
 .panel-label {
