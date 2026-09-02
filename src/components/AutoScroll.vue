@@ -116,14 +116,9 @@ function scrollToNext() {
   } else {
     // At the last panel
     if (isPostDetail()) {
-      // End of a post: smooth scroll down one more screen so the end panel
-      // scrolls away naturally, then redirect to home
-      isAnimating = true
-      c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' })
-      setTimeout(() => {
-        router.push('/')
-        isAnimating = false
-      }, 700)
+      // End of a post: stop auto-scroll, let user manually scroll to go back
+      isActive.value = false
+      clearTimers()
     } else {
       // On home or other pages: loop back to top
       isAnimating = true
@@ -169,6 +164,17 @@ function onUserScroll() {
   updatePanelVisibility()
   if (isAnimating) return
 
+  // If user scrolls down past the end panel of a post, go to feed
+  const c = getContainer()
+  if (c && isPostDetail()) {
+    const panels = getPanels()
+    const idx = Math.round(c.scrollTop / c.clientHeight)
+    if (idx >= panels.length) {
+      router.push('/')
+      return
+    }
+  }
+
   clearTimeout(userScrollTimer)
   clearInterval(intervalId)
   userScrollTimer = setTimeout(() => {
@@ -195,12 +201,7 @@ function onKeydown(e) {
     const panels = getPanels()
     const idx = Math.round(c.scrollTop / c.clientHeight)
     if (idx < panels.length - 1) scrollToPanel(idx + 1)
-    else if (isPostDetail()) {
-      // smooth scroll away then go home
-      isAnimating = true
-      c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' })
-      setTimeout(() => { router.push('/'); isAnimating = false }, 700)
-    }
+    else if (isPostDetail()) router.push('/')
   } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
     e.preventDefault()
     const c = getContainer()
